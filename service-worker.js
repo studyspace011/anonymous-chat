@@ -4,7 +4,7 @@
 const CACHE_NAME = 'anon-chat-cache-v1';
 const urlsToCache = [
   '/',
-  '/index.html',
+  'index.html',
   // Add other static assets here like CSS, icons, etc. if you have them.
 ];
 
@@ -39,3 +39,4 @@ self.addEventListener('activate', event => {
     // Clean up old caches if any
 
 });
+
