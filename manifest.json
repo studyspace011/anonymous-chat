@@ -1,0 +1,20 @@
+{
+  "short_name": "Anonymous Chat",
+  "name": "Anonymous Group Chat",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#6C63FF",
+  "background_color": "#f0f2f5"
+}

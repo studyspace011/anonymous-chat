@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Anonymous Chat</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6C63FF">
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #6C63FF;
+      --secondary: #4A44C6;
+      --success: #4CAF50;
+      --danger: #F44336;
+      --warning: #FF9800;
+      --light: #F8F9FA;
+      --dark: #343A40;
+      --gray: #6C757D;
+      --border: #E9ECEF;
+      --bg: #f0f2f5;
+      --header-bg: white;
+      --message-bg: #f8f9ff;
+      --input-bg: white;
+      --text-primary: #343A40;
+      --text-secondary: #6C757D;
+      --shadow: 0 0 30px rgba(0,0,0,0.1);
+      --input-height: 60px;
+    }
+    
+    .dark-mode {
+      --primary: #7D75FF;
+      --secondary: #5A52D6;
+      --light: #2D3748;
+      --dark: #E2E8F0;
+      --gray: #A0AEC0;
+      --border: #4A5568;
+      --bg: #1A202C;
+      --header-bg: #2D3748;
+      --message-bg: #2D3748;
+      --input-bg: #2D3748;
+      --text-primary: #E2E8F0;
+      --text-secondary: #A0AEC0;
+      --shadow: 0 0 30px rgba(0,0,0,0.3);
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    html, body {
+        height: 100%;
+        width: 100%;
+        font-family: 'Poppins', sans-serif;
+        background: var(--bg);
+        transition: background 0.3s ease;
+        overflow: hidden;
+    }
+
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      background: var(--header-bg);
+      box-shadow: var(--shadow);
+    }
+    
+    /* Header */
+    .chat-header {
+      padding: 15px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--header-bg);
+      flex-wrap: wrap;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    
+    .chat-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+    
+    .chat-title-icon {
+      width: 35px;
+      height: 35px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    
+    .chat-title-text h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .chat-title-text p {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    
+    .header-controls { display: flex; gap: 15px; align-items: center; }
+    .header-stats { display: flex; gap: 15px; align-items: center; }
+    .stat-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; color: var(--text-secondary); }
+    
+    .theme-toggle {
+      background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.2rem;
+      width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s ease;
+    }
+    
+    .theme-toggle:hover { background: var(--border); color: var(--primary); }
+    
+    /* Messages Area */
+    .chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: var(--message-bg);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .message {
+      display: flex;
+      gap: 10px;
+      max-width: 85%;
+      animation: messageAppear 0.3s ease;
+      position: relative;
+    }
+    
+    @keyframes messageAppear {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .message-avatar {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex;
+      align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+    
+    .message-content { flex: 1; min-width: 0; }
+    .message-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .message-user { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); }
+    .admin-badge { background: var(--danger); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.65rem; font-weight: 600; }
+    .message-time { font-size: 0.7rem; color: var(--text-secondary); }
+    
+    .message-text {
+      background: var(--input-bg); padding: 10px 14px; border-radius: 16px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9rem; line-height: 1.4;
+      color: var(--text-primary); word-wrap: break-word;
+    }
+    
+    .message.own { align-self: flex-end; }
+    .message.own .message-text { background: var(--primary); color: white; }
+    
+    .message-actions { display: flex; gap: 6px; margin-top: 6px; opacity: 0; transition: opacity 0.2s; }
+    .message:hover .message-actions { opacity: 1; }
+    .message-actions button { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; padding: 5px; border-radius: 5px; transition: all 0.2s; }
+    .message-actions button:hover { background: var(--border); color: var(--primary); }
+    
+    /* Input Area */
+    .chat-input {
+      padding: 10px; border-top: 1px solid var(--border); background: var(--input-bg);
+      flex-shrink: 0; position: relative; margin-top: auto; z-index: 10;
+    }
+    
+    .input-container {
+      display: flex; gap: 10px; align-items: center; background: var(--input-bg); border-radius: 100px;
+      padding: 10px; box-shadow: 0 1px 10px rgba(0,0,0,0.1); border: 1px solid var(--border);
+    }
+    
+    .input-container input {
+      flex: 1; padding: 12px 16px; border: none; outline: none; font-family: 'Poppins', sans-serif;
+      font-size: 0.95rem; background: transparent; color: var(--text-primary);
+    }
+    
+    .send-button {
+      background: var(--primary); color: white; border: none; width: 45px; height: 45px;
+      border-radius: 50%; cursor: pointer; font-size: 1.1rem; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    
+    .send-button:hover { background: var(--secondary); transform: translateY(-2px); }
+    
+    /* Admin Panel */
+    .admin-panel { padding: 15px; border-top: 1px solid var(--border); background: var(--input-bg); display: none; }
+    .admin-panel.active { display: block; }
+    .admin-panel h3 { color: var(--text-primary); font-size: 1rem; margin-bottom: 10px; }
+    .admin-controls { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+    .admin-btn { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .admin-btn:hover { background: var(--secondary); transform: translateY(-2px); }
+    .admin-btn.danger { background: var(--danger); }
+    
+    /* Notification */
+    .notification { position: fixed; top: 15px; right: 15px; background: var(--success); color: white; padding: 12px 16px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transform: translateX(400px); transition: transform 0.3s ease; z-index: 1001; }
+    .notification.show { transform: translateX(0); }
+    .notification.error { background: var(--danger); }
+    
+    .welcome-message { text-align: center; padding: 20px; color: var(--text-secondary); }
+    
+    @supports(padding: max(0px)) { .chat-input { padding-bottom: max(10px, env(safe-area-inset-bottom)); } }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <div class="chat-title">
+        <div class="chat-title-icon"><i class="fas fa-comments"></i></div>
+        <div class="chat-title-text">
+          <h2>Anonymous Group Chat</h2>
+          <p>Talk Freely, Stay Hidden.</p>
+        </div>
+      </div>
+      <div class="header-controls">
+        <div class="header-stats">
+          <div class="stat-item"><i class="fas fa-users"></i> <span id="activeCount">0</span></div>
+          <div class="stat-item"><i class="fas fa-comment"></i> <span id="messageCount">0</span></div>
+        </div>
+        <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
+      </div>
+    </div>
+    
+    <div class="chat-messages" id="chatMessages">
+      <div class="welcome-message">
+        <p>Welcome! Your username is <strong id="userDisplay"></strong></p>
+      </div>
+    </div>
+    
+    <div class="admin-panel" id="adminPanel">
+      <h3>Admin Controls</h3>
+      <div class="admin-controls">
+        <button class="admin-btn" onclick="clearChat()"><i class="fas fa-trash"></i> Clear Chat</button>
+        <button class="admin-btn danger" onclick="kickUser()"><i class="fas fa-user-slash"></i> Kick User</button>
+      </div>
+    </div>
+    
+    <div class="chat-input">
+      <div class="input-container">
+        <input type="text" id="messageInput" placeholder="Type your message...">
+        <button class="send-button" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="notification" id="notification"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script> <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+  <script>
+    // --- START: INITIALIZE SERVICES ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyC9JnxPpN4IBlJIwkXF4TcUPJlIU-0LPw0",
+      authDomain: "anon-chat-ebfc3.firebaseapp.com",
+      databaseURL: "https://anon-chat-ebfc3-default-rtdb.firebaseio.com",
+      projectId: "anon-chat-ebfc3",
+      storageBucket: "anon-chat-ebfc3.appspot.com",
+      messagingSenderId: "555920973157",
+      appId: "1:555920973157:web:e98c28b81d901fa41b958c"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const messaging = firebase.messaging();
+
+    // Initialize EmailJS with your Public Key
+    emailjs.init("cR_ecVOlooNvaufB0");
+    // --- END: INITIALIZE SERVICES ---
+
+    // --- START: THEME AND PWA SETUP ---
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      body.classList.add('dark-mode');
+      themeIcon.classList.replace('fa-moon', 'fa-sun');
+    }
+    
+    themeToggle.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      if (body.classList.contains('dark-mode')) {
+        themeIcon.classList.replace('fa-moon', 'fa-sun');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        themeIcon.classList.replace('fa-sun', 'fa-moon');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log('Service worker registered.'))
+          .catch(err => console.log('Service worker registration failed: ', err));
+      });
+    }
+    // --- END: THEME AND PWA SETUP ---
+
+    // --- START: USER AND ADMIN SETUP ---
+    function sanitizeUsername(name) {
+      return name.replace(/[.#$[\]]/g, '_');
+    }
+
+    let username = localStorage.getItem('chatUsername');
+    if (!username) {
+      const adjectives = ["Brave", "Clever", "Fast", "Silent", "Happy", "Kind"];
+      const nouns = ["Lion", "Tiger", "Eagle", "Fox", "Wolf", "Cat"];
+      username = adjectives[Math.floor(Math.random() * adjectives.length)] + nouns[Math.floor(Math.random() * nouns.length)] + Math.floor(Math.random() * 100);
+      localStorage.setItem('chatUsername', username);
+    }
+    username = sanitizeUsername(username);
+    document.getElementById('userDisplay').textContent = username;
+
+    const ADMIN_SECRET = "aavid123";
+    let isAdmin = localStorage.getItem('isAdmin') === 'true';
+    if (isAdmin) document.getElementById('adminPanel').classList.add('active');
+    
+    const hasVisited = localStorage.getItem('hasVisited');
+    if (!hasVisited) {
+      const adminKey = prompt("Admin Key (optional, press Cancel to skip):");
+      if (adminKey === ADMIN_SECRET) {
+        isAdmin = true;
+        localStorage.setItem('isAdmin', 'true');
+        document.getElementById('adminPanel').classList.add('active');
+        showNotification('Admin mode activated!', 'success');
+      }
+      localStorage.setItem('hasVisited', 'true');
+    }
+    // --- END: USER AND ADMIN SETUP ---
+
+    // --- START: PUSH NOTIFICATIONS ---
+    function setupNotifications() {
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+                console.log('Notification permission granted.');
+                messaging.getToken({ vapidKey: 'YOUR_VAPID_KEY_FROM_FIREBASE_SETTINGS' })
+                .then((currentToken) => {
+                    if (currentToken) {
+                        // Save the token to the database
+                        db.ref('fcmTokens/' + username).set(currentToken);
+                    } else {
+                        console.log('No registration token available. Request permission to generate one.');
+                    }
+                }).catch((err) => {
+                    console.log('An error occurred while retrieving token. ', err);
+                });
+            } else {
+                console.log('Unable to get permission to notify.');
+            }
+        });
+    }
+    // Automatically ask for notification permission on load
+    window.addEventListener('load', setupNotifications);
+    // --- END: PUSH NOTIFICATIONS ---
+
+    // --- START: DOM AND UTILITY FUNCTIONS ---
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const activeCount = document.getElementById('activeCount');
+    const messageCount = document.getElementById('messageCount');
+
+    function formatTime(timestamp) {
+      return new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+
+    function showNotification(message, type = 'success') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = 'notification ' + (type === 'error' ? 'error' : '');
+      notification.classList.add('show');
+      setTimeout(() => notification.classList.remove('show'), 3000);
+    }
+    // --- END: DOM AND UTILITY FUNCTIONS ---
+
+    // --- START: CORE CHAT FUNCTIONS ---
+    function renderMessage(id, msgData) {
+      const welcomeMsg = document.querySelector('.welcome-message');
+      if (welcomeMsg) welcomeMsg.remove();
+
+      const isOwn = msgData.user === username || (isAdmin && msgData.user === "ADMIN");
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isOwn ? 'own' : ''}`;
+      messageDiv.setAttribute('data-message-id', id);
+      messageDiv.setAttribute('data-user', msgData.user);
+      
+      let adminActions = '';
+      if (isAdmin) {
+          adminActions = `<button onclick="deleteMessage('${id}')" title="Delete"><i class="fas fa-trash"></i></button>`;
+      }
+      
+      // Every user gets a report button, except for their own messages
+      let userActions = '';
+      if (!isOwn) {
+          userActions = `<button onclick="reportMessage('${id}')" title="Report"><i class="fas fa-flag"></i></button>`;
+      }
+
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${msgData.user.charAt(0)}</div>
+        <div class="message-content">
+          <div class="message-header">
+            <span class="message-user">${msgData.user}</span>
+            ${msgData.user === 'ADMIN' ? '<span class="admin-badge">ADMIN</span>' : ''}
+            <span class="message-time">${formatTime(msgData.time)}</span>
+          </div>
+          <div class="message-text">${msgData.message}</div>
+          <div class="message-actions">
+            ${adminActions}
+            ${userActions}
+          </div>
+        </div>
+      `;
+      
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      db.ref("messages").push({
+        user: isAdmin ? "ADMIN" : username,
+        message: message,
+        time: Date.now()
+      });
+
+      messageInput.value = '';
+    }
+
+    messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    // --- END: CORE CHAT FUNCTIONS ---
+
+    // --- START: REPORTING FUNCTION ---
+    function reportMessage(messageId) {
+        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (!messageElement) return;
+
+        const reported_username = messageElement.getAttribute('data-user');
+        const reported_message = messageElement.querySelector('.message-text').textContent;
+        const reporter_username = username;
+
+        const report_reason = prompt("Why are you reporting this message?");
+
+        if (report_reason && report_reason.trim() !== "") {
+            const templateParams = {
+                reporter_username,
+                reported_username,
+                reported_message,
+                report_reason
+            };
+
+            // These IDs are from your EmailJS account.
+            const serviceID = 'service_wc19lto';
+            const templateID = 'template_fp5a41g';
+
+            emailjs.send(serviceID, templateID, templateParams)
+                .then(() => {
+                    showNotification('Report sent successfully. Thank you!', 'success');
+                }, (err) => {
+                    showNotification('Failed to send report. Please try again.', 'error');
+                    console.error('EmailJS error:', err);
+                });
+        }
+    }
+    // --- END: REPORTING FUNCTION ---
+
+    // --- START: ADMIN FUNCTIONS ---
+    function deleteMessage(id) {
+      db.ref("messages/" + id).remove();
+    }
+    function clearChat() {
+      if (confirm('Are you sure you want to clear all messages?')) {
+        db.ref("messages").remove();
+        showNotification('Chat cleared!', 'success');
+      }
+    }
+    function kickUser() {
+      const userToKick = prompt('Enter username to kick (they will be disconnected):');
+      if (userToKick) {
+        db.ref("presence/" + sanitizeUsername(userToKick)).remove()
+          .then(() => showNotification(`User ${userToKick} kicked!`, 'success'))
+          .catch(() => showNotification('Failed to kick user.', 'error'));
+      }
+    }
+    // --- END: ADMIN FUNCTIONS ---
+
+    // --- START: FIREBASE LISTENERS ---
+    db.ref("messages").on("child_added", snap => {
+      renderMessage(snap.key, snap.val());
+      updateMessageCount();
+    });
+
+    db.ref("messages").on("child_removed", snap => {
+      const el = document.querySelector(`[data-message-id="${snap.key}"]`);
+      if (el) el.remove();
+      updateMessageCount();
+      showNotification('A message was deleted by admin.', 'warning');
+    });
+
+    const presenceRef = db.ref("presence/" + username);
+    presenceRef.set(true);
+    presenceRef.onDisconnect().remove();
+
+    db.ref("presence").on("value", snap => {
+      activeCount.textContent = snap.numChildren();
+    });
+
+    function updateMessageCount() {
+      db.ref("messages").once("value", snap => {
+        messageCount.textContent = snap.numChildren();
+      });
+    }
+
+    updateMessageCount();
+    // --- END: FIREBASE LISTENERS ---
+  </script>
+</body>
+</html>
