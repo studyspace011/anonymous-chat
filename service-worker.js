@@ -11,7 +11,7 @@ const urlsToCache = [
 // Install a service worker
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_A_NAME)
+    caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
@@ -37,4 +37,5 @@ self.addEventListener('fetch', event => {
 // Activate the service worker
 self.addEventListener('activate', event => {
     // Clean up old caches if any
+
 });
