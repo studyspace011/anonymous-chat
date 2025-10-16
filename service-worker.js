@@ -1,11 +1,11 @@
-// This file is intentionally kept simple for basic PWA functionality.
-// It ensures the app shell can load offline.
+// service-worker.js (Corrected Code v2)
 
 const CACHE_NAME = 'anon-chat-cache-v1';
+// OLD: const urlsToCache = ['/', '/index.html'];
+// NEW: Paths are now relative to the current directory.
 const urlsToCache = [
-  '/',
-  'index.html',
-  // Add other static assets here like CSS, icons, etc. if you have them.
+  './',
+  'index.html'
 ];
 
 // Install a service worker
@@ -37,6 +37,4 @@ self.addEventListener('fetch', event => {
 // Activate the service worker
 self.addEventListener('activate', event => {
     // Clean up old caches if any
-
 });
-
